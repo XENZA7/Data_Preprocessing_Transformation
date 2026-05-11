@@ -1,86 +1,92 @@
 # Data Preprocessing & Transformation
 
-This repository demonstrates essential data preprocessing and transformation techniques using two different real‑world datasets. One is fully cleaned, the other is left raw for practice or future work.
-
-## 🎯 What is Data Preprocessing?
-
-Raw data is rarely ready for analysis or machine learning. It often contains:
-- Missing values
-- Inconsistent formatting
-- Wrong data types
-- Errors or placeholders
-- Unscaled numeric features
-
-This repository shows how to systematically fix these issues and transform raw data into a clean, structured, model‑ready format.
+This repository contains two projects that demonstrate how to clean, transform, and prepare raw data for machine learning. One project is a complete walkthrough; the other is a raw dataset with a full preprocessing script.
 
 ---
 
-## 📁 Project 1: Cafe_Sales – Complete Example
+## ☕ Project 1: Cafe_Sales – Complete Preprocessing Pipeline
 
-**Concept:** A café records daily sales, but the data is intentionally messy. This project walks through every step of cleaning and transforming it.
+### Concept
+A café records daily sales, but the data is messy (missing values, error strings, wrong data types). The goal is to turn it into a clean, numeric, scaled dataset ready for any ML model.
 
-### What the raw data contains:
-- Missing values (empty cells, `UNKNOWN` strings)
-- Error markers (`ERROR` in price columns)
-- Mixed data types
-- Malformed CSV rows
+### What the Code Does (`cafe_sales.ipynb`)
 
-### What you learn from this notebook:
-| Technique | Why it matters |
-|-----------|----------------|
-| **Handling missing values** | Filling numeric gaps with median, categorical with mode |
-| **Data type conversion** | Turning strings into numbers, dates into datetime |
-| **Error detection** | Replacing `ERROR` placeholders with `NaN` |
-| **One‑hot encoding** | Converting categories (Item, Payment Method) into binary columns |
-| **Date parsing** | Extracting day, month, year from a single date column |
-| **Feature binning** | Creating a price group column ("cheap", "affordable", etc.) |
-| **Scaling (StandardScaler)** | Bringing numeric features to a common scale (mean 0, variance 1) |
-| **Train‑test split** | Preparing data for machine learning evaluation |
+| Step | What the code does | Why |
+|------|-------------------|------|
+| **Load & inspect** | Reads `dirty_cafe_sales .csv`, checks shape, info, missing values. | Understand the problems. |
+| **Clean data types** | Converts `Price Per Unit` and `Total Spent` to numbers; replaces `ERROR` with `NaN`. | Models need numeric input. |
+| **Handle missing values** | Fills numeric gaps with median, categorical with mode. | Avoids losing rows. |
+| **Feature engineering** | One‑hot encodes `Item`, `Payment Method`, `Location`. Extracts day/month/year from `Transaction Date`. Creates `PricePerUnit_group` (binned prices). | Turns text into numbers; creates new signals. |
+| **Scale features** | Applies `StandardScaler` to numeric columns. | Prevents large‑range features from dominating. |
+| **Split data** | Uses `train_test_split`. | Needed for honest evaluation. |
+| **Save output** | Writes `cleaned_data.csv`. | Final ready‑to‑use dataset. |
 
-**Output:** `cleaned_data.csv` – fully numeric, scaled, no missing values.
+**Key concept:** Real data is never clean – you must systematically fix types, missing values, and encode categories before modeling.
 
 ---
 
-## 📁 Project 2: Life_Expectancy – Raw Data for Practice
+## 🌍 Project 2: Life_Expectancy – Full Preprocessing Script
 
-**Concept:** A global health dataset from WHO, containing life expectancy, GDP, mortality rates, schooling, and more for many countries over multiple years.
+### Concept
+A WHO dataset with life expectancy, GDP, mortality, immunization, etc. for many countries over multiple years. The code below (which you can run as a Python script or notebook) performs a complete preprocessing + modeling workflow.
 
-### This dataset is intentionally **unprocessed** – it’s provided as‑is for you to practice your own preprocessing.
+### What the Code Does (the long script provided)
 
-### What makes it a good challenge:
-- Missing values in several columns
-- Numeric and categorical columns (Country, Status – Developed/Developing)
-- Different scales (GDP in thousands, schooling in years, alcohol consumption)
-- Time‑series structure (multiple years per country)
+#### 1. Exploratory Data Analysis (EDA)
+- **Histograms** – see distribution of each numeric feature.
+- **Boxplots** – detect outliers.
+- **Scatter plots** – check relationship with `Life expectancy`.
+- **Heatmap** – see correlations between all numeric variables.
 
-### Suggested preprocessing tasks you can try:
-1. Handle missing values (drop or impute)
-2. Convert `Status` into a binary numeric column (Developed=1, Developing=0)
-3. Scale the numeric features (GDP, Life expectancy, Adult Mortality, etc.)
-4. Create features like "life expectancy change over 5 years"
-5. Split into train/test for predictive modeling
+#### 2. Handling Missing Values
+- First, manual median imputation for `BMI`, `Polio`, `Income composition`.
+- Then **KNN Imputer** – fills missing values using similar rows (based on other numeric features).  
+  *Concept:* KNN looks at neighbours to estimate missing values – more accurate than mean/median for structured data.
 
-**No notebook is included for this dataset** – that’s intentional. You can create your own using the same techniques shown in `Cafe_Sales`.
+#### 3. Outlier Treatment (Winsorization)
+- Defines `wisker(col)` function that computes 1.5×IQR bounds.
+- Caps outliers in `GDP`, `Total expenditure`, and thinness columns to the lower/upper whisker.  
+  *Concept:* replace extreme values with the nearest “normal” value instead of deleting them.
+
+#### 4. Feature Engineering
+- **`Life_Class`** – bins life expectancy into Low (<55), Medium (55‑70), High (>70).  
+- **`Immunization_avg`** – average of Hepatitis B, Polio, Diphtheria.  
+- **`log_GDP`** – natural log of GDP (handles huge range).  
+- **`Alcohol_Level`** – bins alcohol consumption into Low/Moderate/High.
+
+#### 5. Categorical Encoding
+- **Label encoding** for `Life_Class` (0,1,2).  
+- **Binary mapping** for `Status` (Developing→0, Developed→1).  
+- **One‑hot encoding** for `Alcohol_Level` (drop first to avoid multicollinearity).  
+- Drops `Country` (too many unique values).
+
+#### 6. Feature Selection
+- **SelectKBest (f_regression)** – picks top 12 features based on linear correlation with target.  
+- **Random Forest importance** – picks top 12 based on non‑linear importance.  
+- **Union** of both sets – captures linear + non‑linear relationships.  
+- **Remove highly correlated (>0.8)** – drops redundant features.  
+  *Concept:* fewer, independent features reduce overfitting and improve interpretability.
+
+#### 7. Model Training & Comparison
+- Splits data 80/20, scales with `StandardScaler`.  
+- Trains **Linear Regression** and **Random Forest**.  
+- Compares MAE, RMSE, R².  
+- Plots actual vs predicted and feature importance (if Random Forest wins).
+
+#### 8. Hyperparameter Tuning (Random Forest)
+- Uses `RandomizedSearchCV` to try different `n_estimators`, `max_depth`, `min_samples_split`, etc.  
+- Finds best parameters, then evaluates on test set.
+
+**Key concepts demonstrated:**
+- KNN imputation, outlier capping, log transformation, binning.
+- Combined feature selection (linear + tree‑based).
+- Scaling, model comparison, and hyperparameter tuning.
 
 ---
 
-## 🧠 Why Two Different Examples?
+## 🚀 How to Run
 
-| | Cafe_Sales | Life_Expectancy |
-|--|------------|------------------|
-| **Type of data** | Transaction logs | Country health indicators |
-| **Common issues** | Placeholders, error strings, malformed rows | Missing values, mixed scales, time‑series structure |
-| **Goal** | Teach the full pipeline step‑by‑step | Provide raw material for independent practice |
-| **Readiness** | ✅ Complete with explanation | 📦 Raw data only |
-
-Together, they cover the most common real‑world data problems you’ll encounter.
-
----
-
-## 🚀 How to Run the Cafe_Sales Notebook
-
+### Cafe_Sales (Jupyter Notebook)
 ```bash
-git clone https://github.com/XENZA7/Data_Preprocessing_Transformation.git
-cd Data_Preprocessing_Transformation
 pip install pandas numpy scikit-learn
 jupyter notebook Cafe_Sales/cafe_sales.ipynb
