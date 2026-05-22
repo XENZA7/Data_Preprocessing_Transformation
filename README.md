@@ -4,7 +4,7 @@ This repository contains two projects that demonstrate how to clean, transform, 
 
 ---
 
-## ☕ Project 1: Cafe_Sales – Complete Preprocessing Pipeline
+##  Project 1: Cafe_Sales – Complete Preprocessing Pipeline
 
 ### Concept
 A café records daily sales, but the data is messy (missing values, error strings, wrong data types). The goal is to turn it into a clean, numeric, scaled dataset ready for any ML model.
@@ -25,7 +25,7 @@ A café records daily sales, but the data is messy (missing values, error string
 
 ---
 
-## 🌍 Project 2: Life_Expectancy – Full Preprocessing Script
+##  Project 2: Life_Expectancy – Full Preprocessing Script
 
 ### Concept
 A WHO dataset with life expectancy, GDP, mortality, immunization, etc. for many countries over multiple years. The code below (which you can run as a Python script or notebook) performs a complete preprocessing + modeling workflow.
@@ -84,7 +84,7 @@ A WHO dataset with life expectancy, GDP, mortality, immunization, etc. for many 
 
 ---
 
-## 🚀 How to Run
+##  How to Run
 
 ### Cafe_Sales (Jupyter Notebook)
 ```bash
