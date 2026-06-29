@@ -1,4 +1,4 @@
-# Data Preprocessing & Transformation
+# Data Preprocessing , EDA & Transformation
 
 This repository contains two projects that demonstrate how to clean, transform, and prepare raw data for machine learning. One project is a complete walkthrough; the other is a raw dataset with a full preprocessing script.
 
